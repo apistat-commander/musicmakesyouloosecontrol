@@ -1,0 +1,58 @@
+# Albums + Rate Your Music + Last.fm sync
+
+The uploaded `RYM export` is not a usable export: it is a Cloudflare “Just a moment…” HTML page saved with a `.csv` filename. It contains no RYM ratings, reviews, or list rows to merge.
+
+This script is ready to run once you re-download the actual RYM CSV. It:
+
+- adds / updates Albums tags `0.5` through `5.0` from RYM ratings;
+- copies RYM reviews into Albums notes without deleting existing note text;
+- creates `RYM — <list name>` tags for any recognized list column;
+- adds `Last.fm — Top 25 (All Time)` and `Last.fm — Top 100 (All Time)` tags;
+- adds `Last.fm — ♥ Loved Track` to albums that contain a matched loved track;
+- appends all-time Last.fm album-scrobble totals to notes;
+- preserves the original backup and writes a separate JSON output.
+
+## Before running
+
+The Last.fm shared secret visible in the screenshot is an account credential for signed authenticated calls. Treat it as exposed: regenerate/revoke it in your Last.fm API account settings before using this project further. The script does **not** require or use the shared secret. It only needs a fresh API key for public, read-only Last.fm endpoints.
+
+## Run
+
+Put these files in one directory:
+
+- `albums_backup_2026-06-23.json`
+- a real RYM CSV export
+- `sync_albums_from_rym_lastfm.py`
+
+Then:
+
+```bash
+export LASTFM_API_KEY='PASTE_A_FRESH_API_KEY_HERE'
+python3 sync_albums_from_rym_lastfm.py \
+  --albums-backup albums_backup_2026-06-23.json \
+  --rym-export rym_music_export.csv \
+  --lastfm-user ian_curtis_wish \
+  --output albums_rym_lastfm_merged.json
+```
+
+Start with a dry run if you want a match report without writing the new backup:
+
+```bash
+python3 sync_albums_from_rym_lastfm.py \
+  --albums-backup albums_backup_2026-06-23.json \
+  --rym-export rym_music_export.csv \
+  --lastfm-user ian_curtis_wish \
+  --dry-run --output ignored.json
+```
+
+For an RYM-only import:
+
+```bash
+python3 sync_albums_from_rym_lastfm.py \
+  --albums-backup albums_backup_2026-06-23.json \
+  --rym-export rym_music_export.csv \
+  --no-lastfm \
+  --output albums_rym_merged.json
+```
+
+The script rejects a fake `.csv` file that begins with a Cloudflare HTML page.
